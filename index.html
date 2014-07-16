@@ -1,0 +1,92 @@
+<html>
+<head>
+    <script src="bower_components/d3/d3.min.js"></script>
+    <script src="bower_components/cubism/cubism.v1.js"></script>
+    <style>
+        @import url(style.css);
+    </style>
+</head>
+<body>
+<div id="demo"></div>
+<script>
+    //            var context = cubism.context()
+    //                    .step(1e4)
+    //                    .size(1440);
+    //
+//    function stock(name) {
+//        return context.metric(function (start, stop, step, callback) {
+//            console.log('start:', start, ' stop:', stop, ' step:', step);
+//            d3.json("data/" + name + ".json", function (data) {
+//                if (!data) return callback(new Error("unable to load data"));
+//
+//                callback(null, data.map(function (d) {
+//                    return d.points[0][0];
+//                }));
+//            });
+//        }, name);
+//    }
+
+    var context = cubism.context()
+            .step(6e4) // Distance between data points in milliseconds
+            .size(400) // Number of data points
+            .stop();   // Fetching from a static data source; don't update values
+
+    d3.select("body").append("div") // Add a vertical rule
+            .attr("class", "rule")        // to the graph
+            .call(context.rule());
+
+        function stock(name) {
+            return context.metric(function (start, stop, step, callback) {
+                console.log('called metric');
+                d3.json("data/" + name + ".json", function (rows) {
+                    var compare = rows[0][1], value = rows[0][1], values = [value];
+
+                    // Creates an array of the price differences throughout the day
+                    rows.forEach(function (d) {
+                        values.push(value = (d[1] - compare) / compare);
+                    });
+
+                    callback(null, values);
+                });
+            }, name);
+        }
+
+
+    function draw_graph(stocks_list) {
+        d3.select("#demo")                 // Select the div on which we want to act
+                .selectAll(".axis")              // This is a standard D3 mechanism to
+                .data(["top"])                   // bind data to a graph. In this case
+                .enter()                         // we're binding the axes "top" and "bottom".
+                .append("div")                   // Create two divs and
+                .attr("class", function (d) {     // give them the classes
+                    return d + " axis";            // top axis and bottom axis
+                })                               // respectively
+                .each(function (d) {              // For each of these axes,
+                    d3.select(this)                // draw the axes with 4 intervals
+                            .call(context.axis()         // and place them in their proper places
+                                    .ticks(4).orient(d));
+                });
+
+
+        d3.select("#demo")
+                .selectAll(".horizon")
+                .data(stocks_list.map(stock))
+//                .data([23, 0, 0, -1, -2])
+                .enter()
+                .insert("div", ".bottom")        // Insert the graph in a div
+                .attr("class", "horizon")        // Turn the div into
+                .call(context.horizon()          // a horizon graph
+                        .format(d3.format("+,.2p")));    // Format the values to 2 floating-point decimals
+
+
+        context.on("focus", function (i) {
+            d3.selectAll(".value").style("right",                  // Make the rule coincide
+                            i == null ? null : context.size() - i + "px"); // with the mouse
+        });
+    }
+
+        draw_graph(["BEAM"]);
+//    draw_graph(["13291723"]);
+</script>
+</body>
+</html>

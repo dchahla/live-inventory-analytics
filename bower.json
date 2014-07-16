@@ -1,0 +1,19 @@
+{
+  "name": "bts2-analysis",
+  "version": "0.0.0",
+  "authors": [
+    "Donnie Armstrong <donaldjarmstrong@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "cubism": "~1.6.0",
+    "d3": "~3.4.9"
+  }
+}
